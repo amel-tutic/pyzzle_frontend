@@ -361,7 +361,7 @@ const solvePuzzle = async () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [tileSize, image]);
+  }, []);
 
   return (
     <div className="upload-container">

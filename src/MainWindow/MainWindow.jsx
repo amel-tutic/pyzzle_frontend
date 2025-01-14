@@ -17,7 +17,9 @@ function MainWindow() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);  // Track the last completed step
   const [savedState, setSavedState] = useState(null); // To save the paused state
   const [stepsCloud, setStepsCloud] = useState([]);
-  const [delay, setDelay] = useState();
+  const [delay, setDelay] = useState(700);
+  const [isProcessRunning, setIsProcessRunning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   // Function to handle file selection and automatically slice the image
   const handleImageChange = (e) => {
@@ -41,7 +43,7 @@ function MainWindow() {
     setTileNumbers([]); // Reset tile numbers
     setEmptyPosition(null); // Reset empty position
     setShuffles([]); // Reset shuffle history
-    setLog([]); // Reset log history
+    // setLog([]); // Reset log history
     if (image) {
       sliceImageIntoTiles(image, newTileSize); // Re-slice the image for the new N value
     }
@@ -103,18 +105,17 @@ function MainWindow() {
 
   // Function to reset the tiles to their starting (solved) positions
   const resetTiles = () => {
-    // const tileSizeSq = tileSize * tileSize;
-    // const newTileNumbers = Array.from({ length: tileSizeSq }, (_, index) => index + 1);
-    // newTileNumbers[tileSizeSq - 1] = 0; // Set bottom-right tile to 0
+    const tileSizeSq = tileSize * tileSize;
+    const newTileNumbers = Array.from({ length: tileSizeSq }, (_, index) => index + 1);
+    newTileNumbers[tileSizeSq - 1] = 0; // Set bottom-right tile to 0
   
-    // setTileNumbers(newTileNumbers); // Reset tile numbers
-    // setTiles([]); // Reset the tile images
-    // setEmptyPosition(tileSizeSq - 1); // Reset the empty position
-    // setShuffles([]); // Clear the shuffle history log
-    // setLog([]); // Clear the move log
+    setTileNumbers(newTileNumbers); // Reset tile numbers
+    setTiles([]); // Reset the tile images
+    setEmptyPosition(tileSizeSq - 1); // Reset the empty position
+    setShuffles([]); // Clear the shuffle history log
+    setLog([]); // Clear the move log
   
-    // sliceImageIntoTiles(image, tileSize); // Re-slice the image to its original form
-    setDelay(0);
+    sliceImageIntoTiles(image, tileSize); // Re-slice the image to its original form
   };
 
   // Function to shuffle the tile numbers and their images
@@ -181,11 +182,11 @@ function MainWindow() {
   //Function to get steps for solving the puzzle
 // Function to apply steps to solve the puzzle
 const applyStepsWithDelay = (steps) => {
+    setDelay(700);
     setStepsCloud(steps);
     let newTileNumbers = [...tileNumbers];
     let newTiles = [...tiles];
     let newEmptyPosition = emptyPosition;
-    setDelay(700);
     // Log the total number of steps before starting the solution process
     setLog((prevLog) => [...prevLog, `Total Steps: ${steps.length}`]);
     setLog((prevLog) => [...prevLog, 'Starting...']);
@@ -233,6 +234,7 @@ const applyStepsWithDelay = (steps) => {
   
     // Log the pause action
     setLog((prevLog) => [...prevLog, 'Paused!']);
+    setIsPaused(true);
   };
 
   const resume = (steps) => {
@@ -250,6 +252,7 @@ const applyStepsWithDelay = (steps) => {
       applyStepsWithDelay(steps.slice(currentStepIndex));
   
       setLog((prevLog) => [...prevLog, 'Resumed...']);
+      setIsPaused(false);
     } else {
       // In case there's no saved state (this can happen if the user presses resume before pausing)
       setLog((prevLog) => [...prevLog, 'No saved state to resume from.']);
@@ -279,6 +282,9 @@ const solvePuzzle = async () => {
       bfs: "https://pyzzle-backend.onrender.com/api/run_bfs/",
       bestFirst: "https://pyzzle-backend.onrender.com/api/run_best_first_search/",
       aStar: "https://pyzzle-backend.onrender.com/api/run_a_star/",
+      // bfs: "http://localhost:8000/api/run_bfs/",
+      // bestFirst: "http://localhost:8000/api/run_best_first_search/",
+      // aStar: "http://localhost:8000/api/run_a_star/",
     };
 
     const apiEndpoint = endpoints[algorithm];
@@ -347,21 +353,25 @@ const solvePuzzle = async () => {
     }
   };
 
-  // Use effect to detect key press event for 'Enter' and reset tiles
   useEffect(() => {
+    // Add event listener for the Enter key
     const handleKeyDown = (e) => {
+      e.preventDefault(); // Prevent default behavior (like scrolling)
       if (e.key === 'Enter') {
-        resetTiles(); // Reset tiles when 'Enter' is pressed
+        // Stop the process
+        timeoutIds.forEach(clearTimeout);
+        
+        resetTiles();
+        setIsProcessRunning(false);
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
-
-    // Cleanup the event listener on component unmount
     return () => {
+      // Clean up the event listener when the component is unmounted
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+    
+  }, [timeoutIds]);
 
   return (
     <div className="upload-container">
@@ -441,8 +451,8 @@ const solvePuzzle = async () => {
           Reset Tiles
         </button>
 
-        <button onClick={pause}>Pause</button>
-        <button onClick={() => resume(stepsCloud)}>Resume</button>
+        <button className="shuffle-btn" onClick={pause}>Pause</button>
+        <button className="shuffle-btn" onClick={() => resume(stepsCloud)}>Resume</button>
       </div>
 
       <div className="right-container">

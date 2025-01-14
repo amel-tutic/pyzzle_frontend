@@ -313,7 +313,6 @@ const solvePuzzle = async () => {
     // Apply the solution steps to the puzzle
     applyStepsWithDelay(steps); // This will apply the steps and visually update the puzzle
 
-    alert("Puzzle solved!");
   } catch (error) {
     console.error(error);
     alert("An error occurred while solving the puzzle. Please try again.");

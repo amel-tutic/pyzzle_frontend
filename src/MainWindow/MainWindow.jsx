@@ -275,7 +275,7 @@ const solvePuzzle = async () => {
     // Map algorithms to API endpoints
     const endpoints = {
       bfs: "https://pyzzle-backend.onrender.com/api/run_bfs/",
-      bestFirst: "https://pyzzle-backend.onrender.comapi/run_best_first_search/",
+      bestFirst: "https://pyzzle-backend.onrender.com/api/run_best_first_search/",
       aStar: "https://pyzzle-backend.onrender.com/api/run_a_star/",
     };
 

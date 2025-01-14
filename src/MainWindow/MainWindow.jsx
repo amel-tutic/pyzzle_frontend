@@ -17,6 +17,7 @@ function MainWindow() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);  // Track the last completed step
   const [savedState, setSavedState] = useState(null); // To save the paused state
   const [stepsCloud, setStepsCloud] = useState([]);
+  const [delay, setDelay] = useState();
 
   // Function to handle file selection and automatically slice the image
   const handleImageChange = (e) => {
@@ -102,17 +103,18 @@ function MainWindow() {
 
   // Function to reset the tiles to their starting (solved) positions
   const resetTiles = () => {
-    const tileSizeSq = tileSize * tileSize;
-    const newTileNumbers = Array.from({ length: tileSizeSq }, (_, index) => index + 1);
-    newTileNumbers[tileSizeSq - 1] = 0; // Set bottom-right tile to 0
+    // const tileSizeSq = tileSize * tileSize;
+    // const newTileNumbers = Array.from({ length: tileSizeSq }, (_, index) => index + 1);
+    // newTileNumbers[tileSizeSq - 1] = 0; // Set bottom-right tile to 0
   
-    setTileNumbers(newTileNumbers); // Reset tile numbers
-    setTiles([]); // Reset the tile images
-    setEmptyPosition(tileSizeSq - 1); // Reset the empty position
-    setShuffles([]); // Clear the shuffle history log
-    setLog([]); // Clear the move log
+    // setTileNumbers(newTileNumbers); // Reset tile numbers
+    // setTiles([]); // Reset the tile images
+    // setEmptyPosition(tileSizeSq - 1); // Reset the empty position
+    // setShuffles([]); // Clear the shuffle history log
+    // setLog([]); // Clear the move log
   
-    sliceImageIntoTiles(image, tileSize); // Re-slice the image to its original form
+    // sliceImageIntoTiles(image, tileSize); // Re-slice the image to its original form
+    setDelay(0);
   };
 
   // Function to shuffle the tile numbers and their images
@@ -183,7 +185,7 @@ const applyStepsWithDelay = (steps) => {
     let newTileNumbers = [...tileNumbers];
     let newTiles = [...tiles];
     let newEmptyPosition = emptyPosition;
-    const delay = 700;
+    setDelay(700);
     // Log the total number of steps before starting the solution process
     setLog((prevLog) => [...prevLog, `Total Steps: ${steps.length}`]);
     setLog((prevLog) => [...prevLog, 'Starting...']);
